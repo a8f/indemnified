@@ -2,7 +2,7 @@ class Binding {
   String manufacturer, model, type, imageUrl;
 
   String name() {
-    return model + (type == null ? '' : type);
+    return model + (type == null ? '' : ' (' + type + ')');
   }
 
   Binding.fromJson(Map<String, dynamic> bindingJson) {

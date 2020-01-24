@@ -3,5 +3,8 @@
   "searchAppBarTitle": "This is a simple Message",
   "noResults": "No matching models",
   "manufacturer": "Manufacturer",
-  "type": "Type"
+  "type": "Type",
+  "fetchBindingsTitle": "Update Bindings List",
+  "connectionError": "Error connecting to the internet",
+  "searchHint": "Search..."
 }

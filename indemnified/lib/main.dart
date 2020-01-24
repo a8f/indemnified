@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'generated/i18n.dart';
 import 'theme.dart';
+import 'fetch_bindings.dart';
 import 'search.dart';
 
 void main() => runApp(App());

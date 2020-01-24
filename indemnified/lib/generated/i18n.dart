@@ -46,6 +46,19 @@ class S {
     return Intl.message("Type", name: 'type');
   }
 
+  String get fetchBindingsTitle {
+    return Intl.message("Update Bindings List", name: 'fetchBindingsTitle');
+  }
+
+  String get connectionError {
+    return Intl.message(
+        "Error connecting to the internet", name: 'connectionError');
+  }
+
+  String get searchHint {
+    return Intl.message("Search...", name: 'searchHint');
+  }
+
 
 }
 
