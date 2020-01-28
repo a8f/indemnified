@@ -12,7 +12,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: S().appTitle,
-      home: Search(),
+      home: FetchBindings(),
       theme: theme,
       localizationsDelegates: [
         S.delegate,

@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'generated/i18n.dart';
-import 'package:path_provider/path_provider.dart';
-import 'dart:io';
-import 'dart:convert';
-import 'util.dart';
+
 import 'binding.dart';
+import 'generated/i18n.dart';
+import 'util.dart';
 
 class Search extends StatefulWidget implements AppBarPageBase {
-  _SearchState createState() => _SearchState();
+  Map<String, dynamic> _bindingJson;
+
+  Search(Map<String, dynamic> bindingJson) {
+    _bindingJson = bindingJson;
+  }
+
+  _SearchState createState() => _SearchState(_bindingJson);
 
   @override
   AppBar getAppBar(BuildContext context) =>
@@ -16,6 +20,10 @@ class Search extends StatefulWidget implements AppBarPageBase {
 }
 
 class _SearchState extends State<Search> {
+  _SearchState(Map<String, dynamic> bindingJson) {
+    _init(bindingJson);
+  }
+
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
@@ -26,58 +34,51 @@ class _SearchState extends State<Search> {
   List<String> _manufacturers;
   Map<String, List<String>> _manTypes;
   List<String> _types;
-  int _maxTypeLength = 0,
-      _maxManLength = 0;
+  int _maxTypeLength = 0, _maxManLength = 0;
   String _searchTerm = '';
 
   @override
   initState() {
     super.initState();
-    init();
   }
 
-  void init() async {
-    _loadBindingsFile().then((String bindings) {
-      // Load data from json
-      Map<String, Map<String, bool>> manTypes = {};
-      Set<String> newManufacturers = new Set<String>();
-      Set<String> newTypes = new Set<String>();
-      List<dynamic> bindingsJson = json.decode(bindings)["bindings"];
-      _allBindings = bindingsJson.map((b) => Binding.fromJson(b)).toList();
-      _allBindings.forEach((b) {
-        newManufacturers.add(b.manufacturer);
-        if (b.manufacturer.length > _maxManLength)
-          _maxManLength = b.manufacturer.length;
-        newTypes.add(b.type);
-        if (b.type != null) {
-          if (b.type.length > _maxTypeLength) _maxTypeLength = b.type.length;
-          if (manTypes.containsKey(b.manufacturer)) {
-            manTypes[b.manufacturer][b.type] = true;
-          } else {
-            manTypes[b.manufacturer] = new Map<String, bool>();
-            manTypes[b.manufacturer][b.type] = true;
-          }
+  void _init(Map<String, dynamic> bindingJson) async {
+    // Load data from json
+    Map<String, Map<String, bool>> manTypes = {};
+    Set<String> newManufacturers = new Set<String>();
+    Set<String> newTypes = new Set<String>();
+    List<dynamic> bindingsJson = bindingJson["bindings"];
+    _allBindings = bindingsJson.map((b) => Binding.fromJson(b)).toList();
+    _allBindings.forEach((b) {
+      newManufacturers.add(b.manufacturer);
+      if (b.manufacturer.length > _maxManLength)
+        _maxManLength = b.manufacturer.length;
+      newTypes.add(b.type);
+      if (b.type != null) {
+        if (b.type.length > _maxTypeLength) _maxTypeLength = b.type.length;
+        if (manTypes.containsKey(b.manufacturer)) {
+          manTypes[b.manufacturer][b.type] = true;
+        } else {
+          manTypes[b.manufacturer] = new Map<String, bool>();
+          manTypes[b.manufacturer][b.type] = true;
         }
-      });
-
-      Map<String, List<String>> newManTypes = {};
-      manTypes.forEach((k, v) {
-        newManTypes[k] = v.keys.toList();
-        newManTypes[k].sort();
-      });
-      // Initialize the class variables
-      _manufacturers = newManufacturers.toList();
-      _manufacturers.sort();
-      debugPrint(newTypes.toString());
-      newTypes.remove(null);
-      _types = newTypes.toList();
-      _types.sort();
-      _manTypes = newManTypes;
-      setState(() {
-        _results = _allBindings;
-        _loading = false;
-      });
+      }
     });
+
+    Map<String, List<String>> newManTypes = {};
+    manTypes.forEach((k, v) {
+      newManTypes[k] = v.keys.toList();
+      newManTypes[k].sort();
+    });
+    // Initialize the class variables
+    _manufacturers = newManufacturers.toList();
+    _manufacturers.sort();
+    newTypes.remove(null);
+    _types = newTypes.toList();
+    _types.sort();
+    _manTypes = newManTypes;
+    _results = _allBindings;
+    _loading = false;
   }
 
   Future<String> _loadBindingsFile() async {
@@ -127,23 +128,16 @@ class _SearchState extends State<Search> {
     if (_loading) {
       return Padding(padding: EdgeInsets.only(top: 10.0));
     }
-    debugPrint(_maxTypeLength.toString());
-    String typeHint = S
-        .of(context)
-        .type;
+    String typeHint = S.of(context).type;
     typeHint += ' ' * (_maxTypeLength - typeHint.length);
-    String manHint = S
-        .of(context)
-        .manufacturer;
+    String manHint = S.of(context).manufacturer;
     manHint += ' ' * (_maxManLength - manHint.length);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Expanded(
             child: Card(
-                color: Theme
-                    .of(context)
-                    .cardColor,
+                color: Theme.of(context).cardColor,
                 child: Form(
                     key: _formKey,
                     child: Column(
@@ -199,18 +193,18 @@ class _SearchState extends State<Search> {
                           children: <Widget>[
                             Expanded(
                                 child: TextField(
-                                  controller: _searchController,
-                                  decoration:
+                              controller: _searchController,
+                              decoration:
                                   InputDecoration(icon: Icon(Icons.search)),
-                                  style: TextStyle(color: Colors.black),
-                                  textInputAction: TextInputAction.search,
-                                  onChanged: (s) {
-                                    setState(() {
-                                      _searchTerm = s;
-                                    });
-                                    _filter();
-                                  },
-                                ))
+                              style: TextStyle(color: Colors.black),
+                              textInputAction: TextInputAction.search,
+                              onChanged: (s) {
+                                setState(() {
+                                  _searchTerm = s;
+                                });
+                                _filter();
+                              },
+                            ))
                           ],
                         )
                       ],
@@ -225,9 +219,7 @@ class _SearchState extends State<Search> {
           padding: EdgeInsets.only(top: 10.0),
           child: Visibility(
               visible: _loading,
-              child: SpinKitRing(color: Theme
-                  .of(context)
-                  .accentColor)));
+              child: SpinKitRing(color: Theme.of(context).accentColor)));
     }
     if (_results.length == 0) {
       return Center(

@@ -18,11 +18,9 @@ class $en extends MessageLookupByLibrary {
 		"noResults" : MessageLookupByLibrary.simpleMessage("No matching models"),
 		"manufacturer" : MessageLookupByLibrary.simpleMessage("Manufacturer"),
 		"type" : MessageLookupByLibrary.simpleMessage("Type"),
-    "fetchBindingsTitle": MessageLookupByLibrary.simpleMessage(
-        "Update Bindings List"),
-    "connectionError": MessageLookupByLibrary.simpleMessage(
-        "Error connecting to the internet"),
-    "searchHint": MessageLookupByLibrary.simpleMessage("Search..."),
+		"fetchBindingsTitle" : MessageLookupByLibrary.simpleMessage("Update Bindings List"),
+		"connectionError" : MessageLookupByLibrary.simpleMessage("Error connecting to the internet"),
+		"searchHint" : MessageLookupByLibrary.simpleMessage("Search..."),
 
   };
 }

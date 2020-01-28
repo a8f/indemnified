@@ -51,8 +51,7 @@ class S {
   }
 
   String get connectionError {
-    return Intl.message(
-        "Error connecting to the internet", name: 'connectionError');
+    return Intl.message("Error connecting to the internet", name: 'connectionError');
   }
 
   String get searchHint {

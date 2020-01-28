@@ -1,9 +1,15 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+
 import 'generated/i18n.dart';
-import 'dart:convert';
-import 'binding.dart';
+import 'search.dart';
+
+String _downloadUrl = 'https://pastebin.com/raw/6XEJAGqH';
 
 class FetchBindings extends StatefulWidget {
   @override
@@ -14,27 +20,74 @@ class _FetchBindingState extends State<FetchBindings> {
   bool loginLoading = false, noServerConnection = false, loginError = false;
   bool connectionError = false;
   bool savedLoginTried = false;
-  Future<Map<String, dynamic>> _bindingsJson;
+  Duration updateFreq = Duration(days: 10); // TODO allow setting this
+  Map<String, dynamic> _bindingsJson;
 
-  Future<Map<String, dynamic>> fetchBindings() async {
-    final response = await http
-        .get('https://gist.github.com/a8f/28330e4afb9d56ec18e96262739c57a5.js');
+  /// Returns true iff a new list should be downloaded from the server
+  /// If false is returned then _bindingsJson is set
+  Future<bool> shouldFetchNewList() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final path = directory.path;
+    File file = File('$path/indemnified.json');
+    String contents;
+    try {
+      contents = await file.readAsString();
+    } catch (FileSystemException) {
+      await file.create();
+      return true;
+    }
+    Map<String, dynamic> fileJson;
+    try {
+      fileJson = json.decode(contents);
+    } catch (FormatException) {
+      return true;
+    }
+    if (!fileJson.containsKey('downloadDate') ||
+        !fileJson.containsKey('bindings')) {
+      return true;
+    }
+    DateTime downloadDate;
+    try {
+      downloadDate = DateTime.parse(fileJson['downloadDate']);
+    } catch (FormatException) {
+      return true;
+    }
+    DateTime now = DateTime.now();
+    return now.difference(downloadDate) > updateFreq;
+  }
+
+  Future<void> fetchBindings() async {
+    if (!(await shouldFetchNewList())) {
+      return _bindingsJson;
+    }
+    final response = await http.get(_downloadUrl);
     if (response.statusCode == 200) {
-      return json.decode(response.body);
+      Map<String, dynamic> bindingsJson = json.decode(response.body);
+      bindingsJson["downloadDate"] = DateTime.now();
+      final directory = await getApplicationDocumentsDirectory();
+      final path = directory.path;
+      File file = File('$path/indemnified.json');
+      file.writeAsString(bindingsJson.toString());
+      _bindingsJson = bindingsJson;
     } else {
       connectionError = true;
+      _bindingsJson = null;
     }
   }
 
   void initState() {
     super.initState();
-    _bindingsJson = fetchBindings();
+    fetchBindings().then((_) {
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) => Search(_bindingsJson)));
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(S.of(context).fetchBindingsTitle)),
+      body: _mainWindow(context),
     );
   }
 
