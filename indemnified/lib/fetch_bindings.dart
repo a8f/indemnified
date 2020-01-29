@@ -28,7 +28,6 @@ class _FetchBindingState extends State<FetchBindings> {
     final directory = await getApplicationDocumentsDirectory();
     final path = directory.path;
     File file = File('$path/indemnified.json');
-    debugPrint(file.toString());
     String contents;
     try {
       contents = await file.readAsString();
@@ -59,7 +58,6 @@ class _FetchBindingState extends State<FetchBindings> {
       return true;
     }
     DateTime now = DateTime.now();
-    debugPrint(now.difference(downloadDate).toString());
     return now.difference(downloadDate) > updateFreq;
   }
 
@@ -70,8 +68,10 @@ class _FetchBindingState extends State<FetchBindings> {
       _bindingsJson =
           json.decode(await File('$path/indemnified.json').readAsString());
       updating = false;
+      debugPrint('Read bindings from file');
       return;
     }
+    debugPrint('Getting bindings from network');
     final response = await http.get(_downloadUrl);
     if (response.statusCode == 200) {
       Map<String, dynamic> bindingsJson = json.decode(response.body);
@@ -80,7 +80,6 @@ class _FetchBindingState extends State<FetchBindings> {
       final path = directory.path;
       File file = File('$path/indemnified.json');
       file.writeAsString(json.encode(bindingsJson));
-      debugPrint(file.toString());
       _bindingsJson = bindingsJson;
     } else {
       connectionError = true;

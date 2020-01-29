@@ -1,4 +1,4 @@
-package com.example.indemnified
+package net.airstrafe.indemnified
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity

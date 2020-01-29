@@ -4,6 +4,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'binding.dart';
 import 'generated/i18n.dart';
 import 'util.dart';
+import 'warning.dart';
 
 class Search extends StatefulWidget implements AppBarPageBase {
   Map<String, dynamic> _bindingJson;
@@ -27,6 +28,7 @@ class _SearchState extends State<Search> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
+  ListView _resultsView;
   bool _loading = true;
   List<Binding> _allBindings = [];
   List<Binding> _results = [];
@@ -81,12 +83,6 @@ class _SearchState extends State<Search> {
     _loading = false;
   }
 
-  Future<String> _loadBindingsFile() async {
-    String bindings =
-        await DefaultAssetBundle.of(context).loadString("res/bindings.json");
-    return bindings;
-  }
-
   List<DropdownMenuItem<String>> _manufacturerDropdownMenuItems() {
     return _manufacturers
         .map((m) => DropdownMenuItem<String>(value: m, child: Text(m)))
@@ -111,8 +107,11 @@ class _SearchState extends State<Search> {
     List<Binding> bindings = _allBindings;
     _results = bindings.where((b) {
       if (_searchTerm != null && _searchTerm.isNotEmpty) {
-        if (!b.name().toLowerCase().contains(_searchTerm) &&
-            !b.manufacturer.toLowerCase().contains(_searchTerm)) return false;
+        if (!b.name().toLowerCase().replaceAll(' ', '').contains(_searchTerm) &&
+            !b.manufacturer
+                .toLowerCase()
+                .replaceAll(' ', '')
+                .contains(_searchTerm)) return false;
       }
       if (_selectedManufacturer == null) {
         return _selectedType == null || _selectedType == b.type;
@@ -121,6 +120,7 @@ class _SearchState extends State<Search> {
       if (_selectedType == null) return true;
       return _selectedType == b.type;
     }).toList();
+    _results.sort((a, b) => a.name().compareTo(b.name()));
     _scrollController.jumpTo(0);
   }
 
@@ -213,6 +213,11 @@ class _SearchState extends State<Search> {
     );
   }
 
+  void _showWarning(int index) {
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => Warning(_results[index].warning)));
+  }
+
   Widget _resultsListView(BuildContext context) {
     if (_loading) {
       return Padding(
@@ -233,11 +238,28 @@ class _SearchState extends State<Search> {
       controller: _scrollController,
       itemCount: _results.length,
       itemBuilder: (context, index) {
+        if (_results[index].warning == null) {
+          return ListTile(
+            title: Text(_results[index].name(),
+                style: Theme.of(context).primaryTextTheme.body1),
+            subtitle: Text(_results[index].manufacturer,
+                style: Theme.of(context).primaryTextTheme.body2),
+            dense: true,
+            /*onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => RideInfo(ride: _rides[index])));
+          },*/
+          );
+        }
         return ListTile(
           title: Text(_results[index].name(),
               style: Theme.of(context).primaryTextTheme.body1),
           subtitle: Text(_results[index].manufacturer,
               style: Theme.of(context).primaryTextTheme.body2),
+          trailing: MaterialButton(
+            onPressed: () => _showWarning(index),
+            child: Icon(Icons.warning, color: Colors.amberAccent),
+          ),
           dense: true,
           /*onTap: () {
             Navigator.of(context).push(MaterialPageRoute(
@@ -251,6 +273,7 @@ class _SearchState extends State<Search> {
 
   @override
   Widget build(BuildContext context) {
+    _resultsView = _resultsListView(context);
     return SafeArea(
         child: Scaffold(
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -258,7 +281,7 @@ class _SearchState extends State<Search> {
               Padding(
                   padding: EdgeInsets.only(bottom: 16.0),
                   child: _searchBox(context)),
-              Expanded(child: _resultsListView(context))
+              Expanded(child: _resultsView)
             ])));
   }
 }

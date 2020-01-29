@@ -1,5 +1,5 @@
 class Binding {
-  String manufacturer, model, type, imageUrl;
+  String manufacturer, model, type, imageUrl, warning;
 
   String name() {
     return model + (type == null ? '' : ' (' + type + ')');
@@ -9,5 +9,7 @@ class Binding {
     manufacturer = bindingJson['manufacturer'];
     type = bindingJson.containsKey('type') ? bindingJson['type'] : null;
     model = bindingJson['model'];
+    warning =
+        bindingJson.containsKey('warning') ? bindingJson['warning'] : null;
   }
 }
