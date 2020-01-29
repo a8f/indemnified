@@ -7,3 +7,9 @@ def generate(string: str, use_btype: bool = True):#, manufacturer: str, btype: s
     for i in items[:-1]:
         objects += '{"manufacturer": "%s"%s, "model": "%s"}, ' % (manufacturer, ', "type": "' + btype + '"' if use_btype else '', i)
     return objects
+
+def load_b():
+    import json
+    global b
+    with open('bindings.json', 'r') as file:
+        b = json.loads(file.read())

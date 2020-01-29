@@ -6,5 +6,6 @@
   "type": "Type",
   "fetchBindingsTitle": "Update Bindings List",
   "connectionError": "Error connecting to the internet",
-  "searchHint": "Search..."
+  "searchHint": "Search...",
+  "updating": "Updating indemnified binding list"
 }

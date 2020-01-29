@@ -21,6 +21,7 @@ class $en extends MessageLookupByLibrary {
 		"fetchBindingsTitle" : MessageLookupByLibrary.simpleMessage("Update Bindings List"),
 		"connectionError" : MessageLookupByLibrary.simpleMessage("Error connecting to the internet"),
 		"searchHint" : MessageLookupByLibrary.simpleMessage("Search..."),
+		"updating" : MessageLookupByLibrary.simpleMessage("Updating indemnified binding list"),
 
   };
 }

@@ -58,6 +58,10 @@ class S {
     return Intl.message("Search...", name: 'searchHint');
   }
 
+  String get updating {
+    return Intl.message("Updating indemnified binding list", name: 'updating');
+  }
+
 
 }
 
