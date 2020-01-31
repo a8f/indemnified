@@ -5,6 +5,7 @@ import 'theme.dart';
 import 'fetch_bindings.dart';
 import 'search.dart';
 import 'theme.dart';
+import 'warning.dart';
 
 void main() => runApp(App());
 
@@ -13,7 +14,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: S().appTitle,
-      home: FetchBindings(),
+      home: Warning(),
       theme: theme,
       localizationsDelegates: [
         S.delegate,

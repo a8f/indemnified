@@ -62,6 +62,22 @@ class S {
     return Intl.message("Updating indemnified binding list", name: 'updating');
   }
 
+  String get legalWarning1 {
+    return Intl.message("The software is provided \"as is\", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. In no event shall the authors or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software or the use or other dealings in the software.", name: 'legalWarning1');
+  }
+
+  String legalWarning2(acceptText) {
+    return Intl.message("This list of bindings is incomplete and not definitive. Although we try our best to make sure all data is up to date, a model appearing on this list does not mean it is indemnified. By pressing \"${acceptText}\" below, you agree that the app developers shall not be held liable in the event that a listed binding is not indemnified. Check with the manufacturer for every binding to ensure it is indemnified before servicing.", name: 'legalWarning2', args: [acceptText]);
+  }
+
+  String get accept {
+    return Intl.message("Ok", name: 'accept');
+  }
+
+  String get warningTitle {
+    return Intl.message("Warning", name: 'warningTitle');
+  }
+
 
 }
 
