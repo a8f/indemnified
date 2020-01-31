@@ -17,6 +17,7 @@ class FetchBindings extends StatefulWidget {
 }
 
 class _FetchBindingState extends State<FetchBindings> {
+  bool _done = false;
   bool updating = true;
   bool connectionError = false;
   Duration updateFreq = Duration(days: 10); // TODO allow setting this
@@ -90,10 +91,13 @@ class _FetchBindingState extends State<FetchBindings> {
 
   void initState() {
     super.initState();
-    fetchBindings().then((_) {
-      Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => Search(_bindingsJson)));
-    });
+    if (!_done) {
+      _done = true;
+      fetchBindings().then((_) {
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => Search(_bindingsJson)));
+      });
+    }
   }
 
   @override
@@ -104,10 +108,9 @@ class _FetchBindingState extends State<FetchBindings> {
     );
   }
 
-  @override
   Widget _mainWindow(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(S.of(context).fetchBindingsTitle)),
+//      appBar: AppBar(title: Text(S.of(context).fetchBindingsTitle)),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,

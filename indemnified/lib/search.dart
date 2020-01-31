@@ -37,7 +37,9 @@ class _SearchState extends State<Search> {
   Map<String, List<String>> _manTypes;
   List<String> _types;
   int _maxTypeLength = 0, _maxManLength = 0;
+  bool _maxLengthsSet = false;
   String _searchTerm = '';
+  List<int> _visibleWarnings = List<int>();
 
   @override
   initState() {
@@ -53,11 +55,13 @@ class _SearchState extends State<Search> {
     _allBindings = bindingsJson.map((b) => Binding.fromJson(b)).toList();
     _allBindings.forEach((b) {
       newManufacturers.add(b.manufacturer);
-      if (b.manufacturer.length > _maxManLength)
-        _maxManLength = b.manufacturer.length;
+//      if (!_maxLengthsSet && b.manufacturer.length > _maxManLength)
+//        _maxManLength = b.manufacturer.length;
+
       newTypes.add(b.type);
       if (b.type != null) {
-        if (b.type.length > _maxTypeLength) _maxTypeLength = b.type.length;
+//        if (!_maxLengthsSet && b.type.length > _maxTypeLength)
+//          _maxTypeLength = b.type.length;
         if (manTypes.containsKey(b.manufacturer)) {
           manTypes[b.manufacturer][b.type] = true;
         } else {
@@ -66,6 +70,7 @@ class _SearchState extends State<Search> {
         }
       }
     });
+    _maxLengthsSet = true;
 
     Map<String, List<String>> newManTypes = {};
     manTypes.forEach((k, v) {
@@ -125,13 +130,13 @@ class _SearchState extends State<Search> {
   }
 
   Widget _searchBox(BuildContext context) {
-    if (_loading) {
+    if (_loading || !_maxLengthsSet) {
       return Padding(padding: EdgeInsets.only(top: 10.0));
     }
     String typeHint = S.of(context).type;
-    typeHint += ' ' * (_maxTypeLength - typeHint.length);
+//    typeHint += ' ' * (_maxTypeLength - typeHint.length);
     String manHint = S.of(context).manufacturer;
-    manHint += ' ' * (_maxManLength - manHint.length);
+//    manHint += ' ' * (_maxManLength - manHint.length);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -144,7 +149,7 @@ class _SearchState extends State<Search> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
                             DropdownButton<String>(
                                 value: _selectedManufacturer,
@@ -189,22 +194,25 @@ class _SearchState extends State<Search> {
                           ],
                         ),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
                             Expanded(
-                                child: TextField(
-                              controller: _searchController,
-                              decoration:
-                                  InputDecoration(icon: Icon(Icons.search)),
-                              style: TextStyle(color: Colors.black),
-                              textInputAction: TextInputAction.search,
-                              onChanged: (s) {
-                                setState(() {
-                                  _searchTerm = s;
-                                });
-                                _filter();
-                              },
-                            ))
+                                child: Padding(
+                              child: TextField(
+                                controller: _searchController,
+                                decoration:
+                                    InputDecoration(icon: Icon(Icons.search)),
+                                style: TextStyle(color: Colors.black),
+                                textInputAction: TextInputAction.search,
+                                onChanged: (s) {
+                                  setState(() {
+                                    _searchTerm = s;
+                                  });
+                                  _filter();
+                                },
+                              ),
+                              padding: EdgeInsets.only(left: 20.0, right: 20.0),
+                            )),
                           ],
                         )
                       ],
@@ -213,9 +221,14 @@ class _SearchState extends State<Search> {
     );
   }
 
-  void _showWarning(int index) {
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => Warning(_results[index].warning)));
+  void _toggleWarning(int index) {
+    if (_visibleWarnings.contains(index))
+      _visibleWarnings.remove(index);
+    else
+      _visibleWarnings.add(index);
+    setState(() {
+      _resultsView = _resultsListView(context);
+    });
   }
 
   Widget _resultsListView(BuildContext context) {
@@ -239,35 +252,62 @@ class _SearchState extends State<Search> {
       itemCount: _results.length,
       itemBuilder: (context, index) {
         if (_results[index].warning == null) {
-          return ListTile(
+          return Card(
+            child: ListTile(
+              enabled: false,
+              title: Text(_results[index].name(),
+                  style: Theme.of(context).primaryTextTheme.body1),
+              subtitle: Text(_results[index].manufacturer,
+                  style: Theme.of(context).primaryTextTheme.body1),
+              dense: true,
+              /*onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => RideInfo(ride: _rides[index])));
+          },*/
+            ),
+            color: Theme.of(context).cardColor,
+          );
+        }
+        if (_visibleWarnings.contains(index)) {
+          return Card(
+            child: ListTile(
+              onTap: () => _toggleWarning(index),
+              enabled: true,
+              title: Text(_results[index].name(),
+                  style: Theme.of(context).textTheme.body1),
+              subtitle: Text(
+                  _results[index].manufacturer + '\n' + _results[index].warning,
+                  style: Theme.of(context).primaryTextTheme.body1),
+              trailing: Icon(Icons.warning, color: Colors.amberAccent),
+              isThreeLine: true,
+              dense: true,
+              /*onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => RideInfo(ride: _rides[index])));
+          },*/
+            ),
+            color: Theme.of(context).cardColor,
+          );
+        }
+        return Card(
+          child: ListTile(
+            enabled: true,
+            onTap: () => _toggleWarning(index),
             title: Text(_results[index].name(),
-                style: Theme.of(context).primaryTextTheme.body1),
+                style: Theme.of(context).textTheme.body1),
             subtitle: Text(_results[index].manufacturer,
-                style: Theme.of(context).primaryTextTheme.body2),
+                style: Theme.of(context).primaryTextTheme.body1),
+            trailing: Icon(Icons.warning, color: Colors.amberAccent),
             dense: true,
             /*onTap: () {
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => RideInfo(ride: _rides[index])));
           },*/
-          );
-        }
-        return ListTile(
-          title: Text(_results[index].name(),
-              style: Theme.of(context).primaryTextTheme.body1),
-          subtitle: Text(_results[index].manufacturer,
-              style: Theme.of(context).primaryTextTheme.body2),
-          trailing: MaterialButton(
-            onPressed: () => _showWarning(index),
-            child: Icon(Icons.warning, color: Colors.amberAccent),
           ),
-          dense: true,
-          /*onTap: () {
-            Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => RideInfo(ride: _rides[index])));
-          },*/
+          color: Theme.of(context).cardColor,
         );
       },
-      separatorBuilder: (context, index) => Divider(),
+      separatorBuilder: (context, index) => Row(),
     );
   }
 
@@ -278,9 +318,7 @@ class _SearchState extends State<Search> {
         child: Scaffold(
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             body: Column(children: <Widget>[
-              Padding(
-                  padding: EdgeInsets.only(bottom: 16.0),
-                  child: _searchBox(context)),
+              _searchBox(context),
               Expanded(child: _resultsView)
             ])));
   }

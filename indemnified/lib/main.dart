@@ -4,6 +4,7 @@ import 'generated/i18n.dart';
 import 'theme.dart';
 import 'fetch_bindings.dart';
 import 'search.dart';
+import 'theme.dart';
 
 void main() => runApp(App());
 
